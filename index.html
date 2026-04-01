@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Where Is This Location?</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg-dark: #0a0a0f;
+      --bg-card: #12121a;
+      --accent: #ff6b35;
+      --accent-glow: rgba(255, 107, 53, 0.3);
+      --text-primary: #ffffff;
+      --text-secondary: #8a8a9a;
+      --border: #2a2a3a;
+      --success: #4ade80;
+      --option-bg: #1a1a25;
+      --option-hover: #252535;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .ambient {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      background: 
+        radial-gradient(ellipse 80% 50% at 20% 20%, rgba(255, 107, 53, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--accent), #ff8c5a);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 8px 32px var(--accent-glow);
+    }
+
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 8vw, 4rem);
+      letter-spacing: 3px;
+      background: linear-gradient(135deg, #fff 0%, #ccc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .tagline {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      margin-top: 8px;
+    }
+
+    /* Setup Banner */
+    .setup-banner {
+      background: linear-gradient(135deg, rgba(255, 107, 53, 0.15), rgba(139, 92, 246, 0.1));
+      border: 1px solid var(--accent);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+
+    .setup-banner h3 {
+      color: var(--accent);
+      margin-bottom: 12px;
+      font-size: 1.2rem;
+    }
+
+    .setup-banner p {
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    .setup-banner code {
+      background: var(--bg-dark);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      color: var(--success);
+    }
+
+    .setup-banner.connected {
+      background: rgba(74, 222, 128, 0.1);
+      border-color: var(--success);
+    }
+
+    .setup-banner.connected h3 {
+      color: var(--success);
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 40px;
+    }
+
+    .tab {
+      padding: 12px 28px;
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .tab:hover {
+      border-color: var(--accent);
+      color: var(--text-primary);
+    }
+
+    .tab.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    .panel {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .card-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem;
+      letter-spacing: 1px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title span {
+      color: var(--accent);
+    }
+
+    label {
+      display: block;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    input[type="text"],
+    input[type="url"] {
+      width: 100%;
+      padding: 14px 18px;
+      background: var(--option-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .options-container {
+      margin-bottom: 20px;
+    }
+
+    .option-input {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .option-input input {
+      flex: 1;
+      margin-bottom: 0;
+    }
+
+    .btn-remove {
+      width: 48px;
+      height: 48px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 12px;
+      color: #ef4444;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-remove:hover {
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    .btn-add {
+      width: 100%;
+      padding: 14px;
+      background: transparent;
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      color: var(--text-secondary);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 24px;
+    }
+
+    .btn-add:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 16px 32px;
+      background: linear-gradient(135deg, var(--accent), #ff8c5a);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px var(--accent-glow);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .upload-area {
+      border: 2px dashed var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 24px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .upload-area:hover {
+      border-color: var(--accent);
+    }
+
+    .upload-area.has-image {
+      padding: 0;
+      border: none;
+    }
+
+    .upload-area img {
+      width: 100%;
+      max-height: 400px;
+      object-fit: cover;
+      border-radius: 16px;
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+    }
+
+    .upload-text {
+      color: var(--text-secondary);
+    }
+
+    .upload-text strong {
+      color: var(--accent);
+    }
+
+    #imageInput {
+      display: none;
+    }
+
+    .poll-image {
+      width: 100%;
+      max-height: 450px;
+      object-fit: cover;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .poll-question {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 1px;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .poll-option {
+      background: var(--option-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 24px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .poll-option:hover {
+      border-color: var(--accent);
+      transform: translateX(4px);
+    }
+
+    .poll-option.voted {
+      pointer-events: none;
+    }
+
+    .poll-option .progress-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-glow), transparent);
+      border-radius: 14px;
+      width: 0;
+      transition: width 0.6s ease;
+    }
+
+    .poll-option .content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .option-label {
+      font-weight: 500;
+      font-size: 1.05rem;
+    }
+
+    .option-stats {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .poll-option.voted .option-stats {
+      display: flex;
+    }
+
+    .vote-count {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+    }
+
+    .total-votes {
+      text-align: center;
+      color: var(--text-secondary);
+      margin-top: 24px;
+      font-size: 0.95rem;
+    }
+
+    .total-votes strong {
+      color: var(--accent);
+    }
+
+    .poll-list-item {
+      background: var(--option-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .poll-list-item:hover {
+      border-color: var(--accent);
+      transform: translateX(4px);
+    }
+
+    .poll-list-item img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+
+    .poll-list-info {
+      flex: 1;
+    }
+
+    .poll-list-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 6px;
+    }
+
+    .poll-list-meta {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-secondary);
+    }
+
+    .empty-state .icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 20px;
+      color: var(--text-secondary);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      cursor: pointer;
+      margin-bottom: 24px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+      border-color: var(--accent);
+      color: var(--text-primary);
+    }
+
+    .share-section {
+      background: rgba(74, 222, 128, 0.1);
+      border: 1px solid rgba(74, 222, 128, 0.3);
+      border-radius: 14px;
+      padding: 20px;
+      margin-top: 24px;
+      text-align: center;
+    }
+
+    .share-section p {
+      color: var(--success);
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+
+    .share-link {
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: var(--text-primary);
+      font-family: monospace;
+      font-size: 0.9rem;
+      word-break: break-all;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    .btn-copy {
+      background: var(--success);
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      color: #000;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-copy:hover {
+      transform: scale(1.05);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-secondary);
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 20px 16px;
+      }
+
+      .card {
+        padding: 24px 20px;
+      }
+
+      .tabs {
+        flex-wrap: wrap;
+      }
+
+      .tab {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+      }
+
+      .poll-list-item img {
+        width: 60px;
+        height: 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient"></div>
+  
+  <div class="container">
+    <header>
+      <div class="logo">
+        <div class="logo-icon">📍</div>
+      </div>
+      <h1>Where Is This?</h1>
+      <p class="tagline">Test your geography skills — no signup required!</p>
+    </header>
+
+    <!-- Setup Banner - shown until Supabase is configured -->
+    <div id="setup-banner" class="setup-banner">
+      <h3>⚙️ Quick Setup Required</h3>
+      <p>
+        To enable shared voting, you need to connect to Supabase (free).<br>
+        Edit this file and replace <code>YOUR_SUPABASE_URL</code> and <code>YOUR_SUPABASE_ANON_KEY</code> below.
+      </p>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="vote">Vote</button>
+      <button class="tab" data-tab="create">Create Poll</button>
+    </div>
+
+    <div id="vote-panel" class="panel active">
+      <div id="poll-list">
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Loading polls...</p>
+        </div>
+      </div>
+      <div id="active-poll" style="display: none;"></div>
+    </div>
+
+    <div id="create-panel" class="panel">
+      <div class="card">
+        <h2 class="card-title"><span>📸</span> Create a Location Poll</h2>
+        
+        <label for="pollQuestion">Question Title</label>
+        <input type="text" id="pollQuestion" placeholder="Where is this beautiful place?" value="Where is this location?">
+
+        <label>Location Image</label>
+        <div class="upload-area" id="uploadArea">
+          <div class="upload-icon">🏞️</div>
+          <p class="upload-text">Click to upload or drag & drop<br><strong>PNG, JPG up to 10MB</strong></p>
+        </div>
+        <input type="file" id="imageInput" accept="image/*">
+
+        <label>Answer Options</label>
+        <div class="options-container" id="optionsContainer">
+          <div class="option-input">
+            <input type="text" placeholder="Option 1 (e.g., Paris, France)" class="option-field">
+            <button class="btn-remove" onclick="removeOption(this)">×</button>
+          </div>
+          <div class="option-input">
+            <input type="text" placeholder="Option 2 (e.g., Rome, Italy)" class="option-field">
+            <button class="btn-remove" onclick="removeOption(this)">×</button>
+          </div>
+          <div class="option-input">
+            <input type="text" placeholder="Option 3 (e.g., Barcelona, Spain)" class="option-field">
+            <button class="btn-remove" onclick="removeOption(this)">×</button>
+          </div>
+          <div class="option-input">
+            <input type="text" placeholder="Option 4 (e.g., Athens, Greece)" class="option-field">
+            <button class="btn-remove" onclick="removeOption(this)">×</button>
+          </div>
+        </div>
+        <button class="btn-add" onclick="addOption()">+ Add Another Option</button>
+
+        <button class="btn-primary" id="createBtn" onclick="createPoll()">Create Poll 🚀</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================
+    // 🔧 SUPABASE CONFIGURATION - EDIT THESE!
+    // ============================================
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL';        // e.g., https://abc123.supabase.co
+    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';  // Your anon/public key
+    // ============================================
+
+    let supabase = null;
+    let isConfigured = false;
+
+    // Check if Supabase is configured
+    if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      isConfigured = true;
+      document.getElementById('setup-banner').innerHTML = `
+        <h3>✅ Connected to Supabase</h3>
+        <p>Your polls are now shared with everyone!</p>
+      `;
+      document.getElementById('setup-banner').classList.add('connected');
+    }
+
+    // Get voter ID (anonymous but persistent per browser)
+    function getVoterId() {
+      let id = localStorage.getItem('voter_id');
+      if (!id) {
+        id = 'voter_' + Date.now().toString(36) + Math.random().toString(36).substr(2);
+        localStorage.setItem('voter_id', id);
+      }
+      return id;
+    }
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(`${tab.dataset.tab}-panel`).classList.add('active');
+        
+        if (tab.dataset.tab === 'vote') {
+          loadPolls();
+        }
+      });
+    });
+
+    // Image upload handling
+    const uploadArea = document.getElementById('uploadArea');
+    const imageInput = document.getElementById('imageInput');
+    let uploadedImage = null;
+
+    uploadArea.addEventListener('click', () => imageInput.click());
+
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.style.borderColor = 'var(--accent)';
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.style.borderColor = 'var(--border)';
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.style.borderColor = 'var(--border)';
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        handleImageUpload(file);
+      }
+    });
+
+    imageInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        handleImageUpload(file);
+      }
+    });
+
+    function handleImageUpload(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        uploadedImage = e.target.result;
+        uploadArea.innerHTML = `<img src="${uploadedImage}" alt="Uploaded location">`;
+        uploadArea.classList.add('has-image');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Option management
+    function addOption() {
+      const container = document.getElementById('optionsContainer');
+      const count = container.children.length + 1;
+      const div = document.createElement('div');
+      div.className = 'option-input';
+      div.innerHTML = `
+        <input type="text" placeholder="Option ${count}" class="option-field">
+        <button class="btn-remove" onclick="removeOption(this)">×</button>
+      `;
+      container.appendChild(div);
+    }
+
+    function removeOption(btn) {
+      const container = document.getElementById('optionsContainer');
+      if (container.children.length > 2) {
+        btn.parentElement.remove();
+      }
+    }
+
+    // Create poll
+    async function createPoll() {
+      const question = document.getElementById('pollQuestion').value.trim();
+      const optionFields = document.querySelectorAll('.option-field');
+      const options = Array.from(optionFields)
+        .map(f => f.value.trim())
+        .filter(v => v.length > 0);
+
+      if (!question) {
+        alert('Please enter a question!');
+        return;
+      }
+
+      if (!uploadedImage) {
+        alert('Please upload an image!');
+        return;
+      }
+
+      if (options.length < 2) {
+        alert('Please add at least 2 options!');
+        return;
+      }
+
+      const btn = document.getElementById('createBtn');
+      btn.disabled = true;
+      btn.textContent = 'Creating...';
+
+      const pollId = Date.now().toString(36) + Math.random().toString(36).substr(2, 6);
+
+      if (isConfigured) {
+        try {
+          // Insert poll
+          const { error: pollError } = await supabase
+            .from('polls')
+            .insert({
+              id: pollId,
+              question: question,
+              image: uploadedImage,
+              created_at: new Date().toISOString()
+            });
+
+          if (pollError) throw pollError;
+
+          // Insert options
+          const optionRows = options.map((text, idx) => ({
+            poll_id: pollId,
+            option_index: idx,
+            text: text,
+            votes: 0
+          }));
+
+          const { error: optionsError } = await supabase
+            .from('poll_options')
+            .insert(optionRows);
+
+          if (optionsError) throw optionsError;
+
+        } catch (err) {
+          console.error('Error creating poll:', err);
+          alert('Error creating poll. Check console for details.');
+          btn.disabled = false;
+          btn.textContent = 'Create Poll 🚀';
+          return;
+        }
+      } else {
+        // Fallback to localStorage for demo
+        const polls = JSON.parse(localStorage.getItem('demo_polls') || '[]');
+        polls.unshift({
+          id: pollId,
+          question,
+          image: uploadedImage,
+          options: options.map(text => ({ text, votes: 0 })),
+          created_at: new Date().toISOString()
+        });
+        localStorage.setItem('demo_polls', JSON.stringify(polls));
+      }
+
+      // Reset form
+      resetForm();
+      btn.disabled = false;
+      btn.textContent = 'Create Poll 🚀';
+
+      // Switch to vote tab and show the new poll
+      document.querySelector('[data-tab="vote"]').click();
+      showPoll(pollId);
+    }
+
+    function resetForm() {
+      document.getElementById('pollQuestion').value = 'Where is this location?';
+      uploadedImage = null;
+      uploadArea.innerHTML = `
+        <div class="upload-icon">🏞️</div>
+        <p class="upload-text">Click to upload or drag & drop<br><strong>PNG, JPG up to 10MB</strong></p>
+      `;
+      uploadArea.classList.remove('has-image');
+      document.getElementById('optionsContainer').innerHTML = `
+        <div class="option-input">
+          <input type="text" placeholder="Option 1 (e.g., Paris, France)" class="option-field">
+          <button class="btn-remove" onclick="removeOption(this)">×</button>
+        </div>
+        <div class="option-input">
+          <input type="text" placeholder="Option 2 (e.g., Rome, Italy)" class="option-field">
+          <button class="btn-remove" onclick="removeOption(this)">×</button>
+        </div>
+        <div class="option-input">
+          <input type="text" placeholder="Option 3 (e.g., Barcelona, Spain)" class="option-field">
+          <button class="btn-remove" onclick="removeOption(this)">×</button>
+        </div>
+        <div class="option-input">
+          <input type="text" placeholder="Option 4 (e.g., Athens, Greece)" class="option-field">
+          <button class="btn-remove" onclick="removeOption(this)">×</button>
+        </div>
+      `;
+    }
+
+    // Load polls
+    async function loadPolls() {
+      const pollList = document.getElementById('poll-list');
+      const activePoll = document.getElementById('active-poll');
+      
+      activePoll.style.display = 'none';
+      pollList.style.display = 'block';
+
+      // Check for poll ID in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const pollId = urlParams.get('poll');
+      if (pollId) {
+        showPoll(pollId);
+        return;
+      }
+
+      pollList.innerHTML = `
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Loading polls...</p>
+        </div>
+      `;
+
+      let polls = [];
+
+      if (isConfigured) {
+        try {
+          const { data, error } = await supabase
+            .from('polls')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (error) throw error;
+
+          // Get vote counts for each poll
+          for (let poll of data) {
+            const { data: options } = await supabase
+              .from('poll_options')
+              .select('*')
+              .eq('poll_id', poll.id);
+            
+            poll.options = options || [];
+            poll.totalVotes = poll.options.reduce((sum, o) => sum + (o.votes || 0), 0);
+          }
+
+          polls = data;
+        } catch (err) {
+          console.error('Error loading polls:', err);
+        }
+      } else {
+        // Demo mode
+        polls = JSON.parse(localStorage.getItem('demo_polls') || '[]');
+        polls.forEach(p => {
+          p.totalVotes = p.options.reduce((sum, o) => sum + (o.votes || 0), 0);
+        });
+      }
+
+      if (polls.length === 0) {
+        pollList.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">🗺️</div>
+            <h3>No polls yet!</h3>
+            <p>Create your first location poll to get started.</p>
+          </div>
+        `;
+        return;
+      }
+
+      pollList.innerHTML = polls.map(poll => `
+        <div class="poll-list-item" onclick="showPoll('${poll.id}')">
+          <img src="${poll.image}" alt="Location">
+          <div class="poll-list-info">
+            <div class="poll-list-title">${escapeHtml(poll.question)}</div>
+            <div class="poll-list-meta">${poll.totalVotes} votes • ${poll.options.length} options</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Show single poll
+    async function showPoll(pollId) {
+      const pollList = document.getElementById('poll-list');
+      const activePoll = document.getElementById('active-poll');
+      
+      pollList.style.display = 'none';
+      activePoll.style.display = 'block';
+
+      activePoll.innerHTML = `
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Loading poll...</p>
+        </div>
+      `;
+
+      let poll = null;
+
+      if (isConfigured) {
+        try {
+          const { data: pollData, error: pollError } = await supabase
+            .from('polls')
+            .select('*')
+            .eq('id', pollId)
+            .single();
+
+          if (pollError) throw pollError;
+
+          const { data: options, error: optionsError } = await supabase
+            .from('poll_options')
+            .select('*')
+            .eq('poll_id', pollId)
+            .order('option_index');
+
+          if (optionsError) throw optionsError;
+
+          poll = pollData;
+          poll.options = options;
+          poll.totalVotes = options.reduce((sum, o) => sum + (o.votes || 0), 0);
+
+        } catch (err) {
+          console.error('Error loading poll:', err);
+          activePoll.innerHTML = `
+            <button class="btn-back" onclick="loadPolls()">← Back to all polls</button>
+            <div class="empty-state">
+              <div class="icon">❌</div>
+              <h3>Poll not found</h3>
+              <p>This poll may have been deleted.</p>
+            </div>
+          `;
+          return;
+        }
+      } else {
+        const polls = JSON.parse(localStorage.getItem('demo_polls') || '[]');
+        poll = polls.find(p => p.id === pollId);
+        if (poll) {
+          poll.totalVotes = poll.options.reduce((sum, o) => sum + (o.votes || 0), 0);
+        }
+      }
+
+      if (!poll) {
+        loadPolls();
+        return;
+      }
+
+      const hasVoted = localStorage.getItem(`voted_${pollId}`);
+      const shareUrl = `${window.location.origin}${window.location.pathname}?poll=${pollId}`;
+
+      activePoll.innerHTML = `
+        <button class="btn-back" onclick="loadPolls(); history.pushState({}, '', location.pathname)">← Back to all polls</button>
+        <div class="card">
+          <img src="${poll.image}" class="poll-image" alt="Location">
+          <h2 class="poll-question">${escapeHtml(poll.question)}</h2>
+          <div class="poll-options">
+            ${poll.options.map((opt, idx) => {
+              const percentage = poll.totalVotes > 0 ? Math.round((opt.votes / poll.totalVotes) * 100) : 0;
+              return `
+                <div class="poll-option ${hasVoted ? 'voted' : ''}" 
+                     onclick="vote('${poll.id}', ${idx})"
+                     style="${hasVoted ? `--progress: ${percentage}%` : ''}">
+                  <div class="progress-bar" style="width: ${hasVoted ? percentage : 0}%"></div>
+                  <div class="content">
+                    <span class="option-label">${escapeHtml(opt.text)}</span>
+                    <div class="option-stats">
+                      <span>${percentage}%</span>
+                      <span class="vote-count">${opt.votes} votes</span>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+          <p class="total-votes"><strong>${poll.totalVotes}</strong> total votes</p>
+          
+          <div class="share-section">
+            <p>📤 Share this poll with friends!</p>
+            <code class="share-link">${shareUrl}</code>
+            <button class="btn-copy" onclick="copyLink('${shareUrl}')">Copy Link</button>
+          </div>
+        </div>
+      `;
+
+      // Update URL without reload
+      history.pushState({}, '', `?poll=${pollId}`);
+    }
+
+    // Vote
+    async function vote(pollId, optionIndex) {
+      if (localStorage.getItem(`voted_${pollId}`)) return;
+
+      if (isConfigured) {
+        try {
+          // Get current vote count
+          const { data: option, error: fetchError } = await supabase
+            .from('poll_options')
+            .select('votes')
+            .eq('poll_id', pollId)
+            .eq('option_index', optionIndex)
+            .single();
+
+          if (fetchError) throw fetchError;
+
+          // Increment vote
+          const { error: updateError } = await supabase
+            .from('poll_options')
+            .update({ votes: (option.votes || 0) + 1 })
+            .eq('poll_id', pollId)
+            .eq('option_index', optionIndex);
+
+          if (updateError) throw updateError;
+
+        } catch (err) {
+          console.error('Error voting:', err);
+          alert('Error submitting vote. Please try again.');
+          return;
+        }
+      } else {
+        // Demo mode
+        const polls = JSON.parse(localStorage.getItem('demo_polls') || '[]');
+        const pollIndex = polls.findIndex(p => p.id === pollId);
+        if (pollIndex !== -1) {
+          polls[pollIndex].options[optionIndex].votes++;
+          localStorage.setItem('demo_polls', JSON.stringify(polls));
+        }
+      }
+
+      localStorage.setItem(`voted_${pollId}`, 'true');
+      showPoll(pollId);
+    }
+
+    // Copy link
+    function copyLink(url) {
+      navigator.clipboard.writeText(url).then(() => {
+        const btn = event.target;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy Link', 2000);
+      });
+    }
+
+    // Escape HTML
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Initialize
+    loadPolls();
+  </script>
+</body>
+</html>
