@@ -3,23 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Where Is This Location?</title>
+  <title>وين سمعتا؟ | Where Did You Hear It?</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
-      --bg-dark: #0a0a0f;
-      --bg-card: #12121a;
-      --accent: #ff6b35;
-      --accent-glow: rgba(255, 107, 53, 0.3);
-      --text-primary: #ffffff;
-      --text-secondary: #8a8a9a;
-      --border: #2a2a3a;
-      --success: #4ade80;
-      --option-bg: #1a1a25;
-      --option-hover: #252535;
+      --bg: #fafafa;
+      --bg-card: #ffffff;
+      --cedar-green: #006233;
+      --cedar-dark: #004d28;
+      --red: #EE161F;
+      --red-light: rgba(238, 22, 31, 0.1);
+      --text-primary: #1a1a1a;
+      --text-secondary: #6b6b6b;
+      --border: #e5e5e5;
+      --border-hover: #d0d0d0;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.1);
     }
 
     * {
@@ -29,148 +31,105 @@
     }
 
     body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg-dark);
+      font-family: 'IBM Plex Sans', 'IBM Plex Sans Arabic', sans-serif;
+      background: var(--bg);
       color: var(--text-primary);
       min-height: 100vh;
-      overflow-x: hidden;
+      line-height: 1.6;
     }
 
-    .ambient {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 0;
-      background: 
-        radial-gradient(ellipse 80% 50% at 20% 20%, rgba(255, 107, 53, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+    /* Lebanese flag stripe at top */
+    .flag-stripe {
+      height: 6px;
+      background: linear-gradient(to right, 
+        var(--red) 0%, var(--red) 33.33%, 
+        #fff 33.33%, #fff 66.66%, 
+        var(--cedar-green) 66.66%, var(--cedar-green) 100%
+      );
     }
 
     .container {
-      position: relative;
-      z-index: 1;
-      max-width: 900px;
+      max-width: 800px;
       margin: 0 auto;
       padding: 40px 20px;
     }
 
+    /* Header */
     header {
       text-align: center;
-      margin-bottom: 50px;
+      margin-bottom: 48px;
     }
 
-    .logo {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .logo-icon {
+    .cedar-icon {
       width: 48px;
       height: 48px;
-      background: linear-gradient(135deg, var(--accent), #ff8c5a);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      box-shadow: 0 8px 32px var(--accent-glow);
+      margin: 0 auto 20px;
+    }
+
+    .cedar-icon svg {
+      width: 100%;
+      height: 100%;
+      fill: var(--cedar-green);
     }
 
     h1 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(2.5rem, 8vw, 4rem);
-      letter-spacing: 3px;
-      background: linear-gradient(135deg, #fff 0%, #ccc 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .title-arabic {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      font-size: 1.5rem;
+      color: var(--cedar-green);
+      margin-bottom: 16px;
+      direction: rtl;
     }
 
     .tagline {
       color: var(--text-secondary);
-      font-size: 1.1rem;
-      margin-top: 8px;
+      font-size: 1rem;
+      max-width: 400px;
+      margin: 0 auto;
     }
 
-    /* Setup Banner */
-    .setup-banner {
-      background: linear-gradient(135deg, rgba(255, 107, 53, 0.15), rgba(139, 92, 246, 0.1));
-      border: 1px solid var(--accent);
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 32px;
-      text-align: center;
-    }
-
-    .setup-banner h3 {
-      color: var(--accent);
-      margin-bottom: 12px;
-      font-size: 1.2rem;
-    }
-
-    .setup-banner p {
-      color: var(--text-secondary);
-      margin-bottom: 16px;
-      line-height: 1.6;
-    }
-
-    .setup-banner code {
-      background: var(--bg-dark);
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-size: 0.9rem;
-      color: var(--success);
-    }
-
-    .setup-banner.connected {
-      background: rgba(74, 222, 128, 0.1);
-      border-color: var(--success);
-    }
-
-    .setup-banner.connected h3 {
-      color: var(--success);
-    }
-
+    /* Tabs */
     .tabs {
       display: flex;
       justify-content: center;
       gap: 8px;
-      margin-bottom: 40px;
+      margin-bottom: 32px;
     }
 
     .tab {
-      padding: 12px 28px;
+      padding: 12px 24px;
       border: 1px solid var(--border);
-      border-radius: 50px;
-      background: transparent;
+      border-radius: 8px;
+      background: var(--bg-card);
       color: var(--text-secondary);
-      font-family: 'DM Sans', sans-serif;
+      font-family: inherit;
       font-size: 0.95rem;
       font-weight: 500;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
     }
 
     .tab:hover {
-      border-color: var(--accent);
-      color: var(--text-primary);
+      border-color: var(--cedar-green);
+      color: var(--cedar-green);
     }
 
     .tab.active {
-      background: var(--accent);
-      border-color: var(--accent);
+      background: var(--cedar-green);
+      border-color: var(--cedar-green);
       color: white;
-      box-shadow: 0 4px 20px var(--accent-glow);
     }
 
+    /* Panels */
     .panel {
       display: none;
-      animation: fadeIn 0.4s ease;
+      animation: fadeIn 0.3s ease;
     }
 
     .panel.active {
@@ -178,60 +137,71 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
+      from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
+    /* Cards */
     .card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 32px;
-      margin-bottom: 24px;
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
     }
 
     .card-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.5rem;
-      letter-spacing: 1px;
+      font-size: 1.1rem;
+      font-weight: 600;
       margin-bottom: 24px;
       display: flex;
       align-items: center;
       gap: 10px;
+      color: var(--text-primary);
     }
 
-    .card-title span {
-      color: var(--accent);
+    .card-title .icon {
+      font-size: 1.3rem;
     }
 
+    /* Form elements */
     label {
       display: block;
       color: var(--text-secondary);
-      font-size: 0.9rem;
-      margin-bottom: 8px;
+      font-size: 0.875rem;
+      margin-bottom: 6px;
       font-weight: 500;
     }
 
     input[type="text"],
-    input[type="url"] {
+    input[type="url"],
+    textarea {
       width: 100%;
-      padding: 14px 18px;
-      background: var(--option-bg);
+      padding: 12px 16px;
+      background: var(--bg);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 8px;
       color: var(--text-primary);
-      font-family: 'DM Sans', sans-serif;
+      font-family: inherit;
       font-size: 1rem;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
       margin-bottom: 20px;
     }
 
-    input:focus {
+    input:focus,
+    textarea:focus {
       outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-glow);
+      border-color: var(--cedar-green);
+      box-shadow: 0 0 0 3px rgba(0, 98, 51, 0.1);
     }
 
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    /* Options */
     .options-container {
       margin-bottom: 20px;
     }
@@ -248,147 +218,170 @@
     }
 
     .btn-remove {
-      width: 48px;
-      height: 48px;
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      border-radius: 12px;
-      color: #ef4444;
-      font-size: 1.5rem;
+      width: 44px;
+      height: 44px;
+      background: var(--red-light);
+      border: 1px solid rgba(238, 22, 31, 0.2);
+      border-radius: 8px;
+      color: var(--red);
+      font-size: 1.3rem;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .btn-remove:hover {
-      background: rgba(239, 68, 68, 0.2);
+      background: rgba(238, 22, 31, 0.15);
     }
 
     .btn-add {
       width: 100%;
-      padding: 14px;
+      padding: 12px;
       background: transparent;
       border: 2px dashed var(--border);
-      border-radius: 12px;
+      border-radius: 8px;
       color: var(--text-secondary);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.95rem;
+      font-family: inherit;
+      font-size: 0.9rem;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
       margin-bottom: 24px;
     }
 
     .btn-add:hover {
-      border-color: var(--accent);
-      color: var(--accent);
+      border-color: var(--cedar-green);
+      color: var(--cedar-green);
     }
 
     .btn-primary {
       width: 100%;
-      padding: 16px 32px;
-      background: linear-gradient(135deg, var(--accent), #ff8c5a);
+      padding: 14px 28px;
+      background: var(--cedar-green);
       border: none;
-      border-radius: 12px;
+      border-radius: 8px;
       color: white;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 1.1rem;
+      font-family: inherit;
+      font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 20px var(--accent-glow);
+      transition: all 0.2s ease;
     }
 
     .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 30px var(--accent-glow);
+      background: var(--cedar-dark);
     }
 
     .btn-primary:disabled {
-      opacity: 0.5;
+      opacity: 0.6;
       cursor: not-allowed;
-      transform: none;
     }
 
+    /* Upload area */
     .upload-area {
       border: 2px dashed var(--border);
-      border-radius: 16px;
-      padding: 40px;
+      border-radius: 10px;
+      padding: 40px 20px;
       text-align: center;
       margin-bottom: 24px;
       cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
+      transition: all 0.2s ease;
+      background: var(--bg);
     }
 
     .upload-area:hover {
-      border-color: var(--accent);
+      border-color: var(--cedar-green);
     }
 
     .upload-area.has-image {
       padding: 0;
       border: none;
+      background: none;
     }
 
     .upload-area img {
       width: 100%;
-      max-height: 400px;
+      max-height: 350px;
       object-fit: cover;
-      border-radius: 16px;
+      border-radius: 10px;
     }
 
     .upload-icon {
-      font-size: 3rem;
-      margin-bottom: 16px;
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+      opacity: 0.7;
     }
 
     .upload-text {
       color: var(--text-secondary);
+      font-size: 0.95rem;
     }
 
     .upload-text strong {
-      color: var(--accent);
+      color: var(--cedar-green);
     }
 
     #imageInput {
       display: none;
     }
 
+    /* Poll display */
     .poll-image {
       width: 100%;
-      max-height: 450px;
+      max-height: 400px;
       object-fit: cover;
-      border-radius: 16px;
-      margin-bottom: 24px;
-      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .poll-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+    }
+
+    .poll-meta .dot {
+      width: 4px;
+      height: 4px;
+      background: var(--text-secondary);
+      border-radius: 50%;
     }
 
     .poll-question {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 2rem;
-      letter-spacing: 1px;
-      text-align: center;
-      margin-bottom: 32px;
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .poll-description {
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      font-size: 0.95rem;
     }
 
     .poll-option {
-      background: var(--option-bg);
+      background: var(--bg);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 18px 24px;
-      margin-bottom: 12px;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 10px;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
       position: relative;
       overflow: hidden;
     }
 
     .poll-option:hover {
-      border-color: var(--accent);
-      transform: translateX(4px);
+      border-color: var(--cedar-green);
     }
 
     .poll-option.voted {
-      pointer-events: none;
+      cursor: default;
     }
 
     .poll-option .progress-bar {
@@ -396,10 +389,10 @@
       left: 0;
       top: 0;
       height: 100%;
-      background: linear-gradient(90deg, var(--accent-glow), transparent);
-      border-radius: 14px;
+      background: rgba(0, 98, 51, 0.08);
+      border-radius: 10px;
       width: 0;
-      transition: width 0.6s ease;
+      transition: width 0.5s ease;
     }
 
     .poll-option .content {
@@ -412,7 +405,6 @@
 
     .option-label {
       font-weight: 500;
-      font-size: 1.05rem;
     }
 
     .option-stats {
@@ -428,46 +420,50 @@
     }
 
     .vote-count {
-      background: rgba(255, 255, 255, 0.1);
+      background: var(--bg-card);
       padding: 4px 10px;
       border-radius: 20px;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
+      border: 1px solid var(--border);
     }
 
     .total-votes {
       text-align: center;
       color: var(--text-secondary);
-      margin-top: 24px;
-      font-size: 0.95rem;
+      margin-top: 20px;
+      font-size: 0.9rem;
     }
 
     .total-votes strong {
-      color: var(--accent);
+      color: var(--cedar-green);
     }
 
+    /* Poll list */
     .poll-list-item {
-      background: var(--option-bg);
+      background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 20px;
+      border-radius: 10px;
+      padding: 16px;
       margin-bottom: 12px;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
       display: flex;
-      gap: 20px;
+      gap: 16px;
       align-items: center;
+      box-shadow: var(--shadow);
     }
 
     .poll-list-item:hover {
-      border-color: var(--accent);
-      transform: translateX(4px);
+      border-color: var(--cedar-green);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
     }
 
     .poll-list-item img {
-      width: 80px;
-      height: 80px;
+      width: 72px;
+      height: 72px;
       object-fit: cover;
-      border-radius: 10px;
+      border-radius: 8px;
     }
 
     .poll-list-info {
@@ -476,15 +472,15 @@
 
     .poll-list-title {
       font-weight: 600;
-      font-size: 1.1rem;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     .poll-list-meta {
       color: var(--text-secondary);
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
 
+    /* Empty state */
     .empty-state {
       text-align: center;
       padding: 60px 20px;
@@ -492,76 +488,86 @@
     }
 
     .empty-state .icon {
-      font-size: 4rem;
-      margin-bottom: 20px;
+      font-size: 3rem;
+      margin-bottom: 16px;
       opacity: 0.5;
     }
 
+    .empty-state h3 {
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    /* Back button */
     .btn-back {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       background: transparent;
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 20px;
+      border-radius: 8px;
+      padding: 10px 16px;
       color: var(--text-secondary);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.95rem;
+      font-family: inherit;
+      font-size: 0.9rem;
       cursor: pointer;
-      margin-bottom: 24px;
-      transition: all 0.3s ease;
+      margin-bottom: 20px;
+      transition: all 0.2s ease;
     }
 
     .btn-back:hover {
-      border-color: var(--accent);
-      color: var(--text-primary);
+      border-color: var(--cedar-green);
+      color: var(--cedar-green);
     }
 
+    /* Share section */
     .share-section {
-      background: rgba(74, 222, 128, 0.1);
-      border: 1px solid rgba(74, 222, 128, 0.3);
-      border-radius: 14px;
+      background: rgba(0, 98, 51, 0.05);
+      border: 1px solid rgba(0, 98, 51, 0.2);
+      border-radius: 10px;
       padding: 20px;
       margin-top: 24px;
       text-align: center;
     }
 
     .share-section p {
-      color: var(--success);
+      color: var(--cedar-green);
       margin-bottom: 12px;
       font-weight: 500;
+      font-size: 0.95rem;
     }
 
     .share-link {
-      background: var(--bg-dark);
+      background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 8px;
       padding: 12px 16px;
       color: var(--text-primary);
       font-family: monospace;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       word-break: break-all;
       display: block;
       margin-bottom: 12px;
     }
 
     .btn-copy {
-      background: var(--success);
+      background: var(--cedar-green);
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       padding: 10px 20px;
-      color: #000;
-      font-family: 'DM Sans', sans-serif;
+      color: white;
+      font-family: inherit;
       font-weight: 600;
+      font-size: 0.9rem;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
     }
 
     .btn-copy:hover {
-      transform: scale(1.05);
+      background: var(--cedar-dark);
     }
 
+    /* Loading */
     .loading {
       text-align: center;
       padding: 40px;
@@ -569,26 +575,96 @@
     }
 
     .spinner {
-      width: 40px;
-      height: 40px;
+      width: 32px;
+      height: 32px;
       border: 3px solid var(--border);
-      border-top-color: var(--accent);
+      border-top-color: var(--cedar-green);
       border-radius: 50%;
       animation: spin 1s linear infinite;
-      margin: 0 auto 16px;
+      margin: 0 auto 12px;
     }
 
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
 
+    /* Setup banner */
+    .setup-banner {
+      background: rgba(0, 98, 51, 0.05);
+      border: 1px solid rgba(0, 98, 51, 0.2);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .setup-banner h3 {
+      color: var(--cedar-green);
+      margin-bottom: 8px;
+      font-size: 1rem;
+    }
+
+    .setup-banner p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .setup-banner code {
+      background: var(--bg-card);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      color: var(--cedar-green);
+      border: 1px solid var(--border);
+    }
+
+    .setup-banner.connected {
+      background: rgba(0, 98, 51, 0.08);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+
+    footer a {
+      color: var(--cedar-green);
+      text-decoration: none;
+    }
+
+    /* Safety note */
+    .safety-note {
+      background: var(--red-light);
+      border: 1px solid rgba(238, 22, 31, 0.2);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 24px;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+    }
+
+    .safety-note strong {
+      color: var(--red);
+    }
+
     @media (max-width: 600px) {
       .container {
-        padding: 20px 16px;
+        padding: 24px 16px;
+      }
+
+      h1 {
+        font-size: 1.6rem;
+      }
+
+      .title-arabic {
+        font-size: 1.3rem;
       }
 
       .card {
-        padding: 24px 20px;
+        padding: 20px;
       }
 
       .tabs {
@@ -596,116 +672,120 @@
       }
 
       .tab {
-        padding: 10px 20px;
+        padding: 10px 18px;
         font-size: 0.9rem;
       }
 
       .poll-list-item img {
-        width: 60px;
-        height: 60px;
+        width: 56px;
+        height: 56px;
       }
     }
   </style>
 </head>
 <body>
-  <div class="ambient"></div>
+  <div class="flag-stripe"></div>
   
   <div class="container">
     <header>
-      <div class="logo">
-        <div class="logo-icon">📍</div>
+      <div class="cedar-icon">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <path d="M50 5 L55 25 L75 20 L60 35 L80 40 L58 45 L85 55 L55 55 L90 70 L50 65 L50 95 L50 65 L10 70 L45 55 L15 55 L42 45 L20 40 L40 35 L25 20 L45 25 Z"/>
+        </svg>
       </div>
-      <h1>Where Is This?</h1>
-      <p class="tagline">Test your geography skills — no signup required!</p>
+      <h1>Where Did You Hear It?</h1>
+      <p class="title-arabic">وين سمعتا؟</p>
+      <p class="tagline">Help identify the source of sounds heard across Lebanon</p>
     </header>
 
-    <!-- Setup Banner - shown until Supabase is configured -->
     <div id="setup-banner" class="setup-banner">
-      <h3>⚙️ Quick Setup Required</h3>
-      <p>
-        To enable shared voting, you need to connect to Supabase (free).<br>
-        Edit this file and replace <code>YOUR_SUPABASE_URL</code> and <code>YOUR_SUPABASE_ANON_KEY</code> below.
-      </p>
+      <h3>⚙️ Setup Required</h3>
+      <p>Connect to Supabase to enable shared polls. Edit the file and add your <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code>.</p>
     </div>
 
     <div class="tabs">
-      <button class="tab active" data-tab="vote">Vote</button>
-      <button class="tab" data-tab="create">Create Poll</button>
+      <button class="tab active" data-tab="vote">Reports</button>
+      <button class="tab" data-tab="create">Report Sound</button>
     </div>
 
     <div id="vote-panel" class="panel active">
       <div id="poll-list">
         <div class="loading">
           <div class="spinner"></div>
-          <p>Loading polls...</p>
+          <p>Loading reports...</p>
         </div>
       </div>
       <div id="active-poll" style="display: none;"></div>
     </div>
 
     <div id="create-panel" class="panel">
-      <div class="card">
-        <h2 class="card-title"><span>📸</span> Create a Location Poll</h2>
-        
-        <label for="pollQuestion">Question Title</label>
-        <input type="text" id="pollQuestion" placeholder="Where is this beautiful place?" value="Where is this location?">
+      <div class="safety-note">
+        <strong>🛡️ Stay Safe:</strong> Only share information if it's safe to do so. Do not share precise military locations or sensitive information.
+      </div>
 
-        <label>Location Image</label>
+      <div class="card">
+        <h2 class="card-title"><span class="icon">📍</span> Report a Sound</h2>
+        
+        <label for="pollQuestion">What did you hear?</label>
+        <input type="text" id="pollQuestion" placeholder="e.g., Loud explosion heard in Beirut">
+
+        <label for="pollDescription">Description (optional)</label>
+        <textarea id="pollDescription" placeholder="Time, duration, direction of sound..."></textarea>
+
+        <label>Add a photo (optional)</label>
         <div class="upload-area" id="uploadArea">
-          <div class="upload-icon">🏞️</div>
-          <p class="upload-text">Click to upload or drag & drop<br><strong>PNG, JPG up to 10MB</strong></p>
+          <div class="upload-icon">📷</div>
+          <p class="upload-text">Click to upload or drag & drop<br><strong>PNG, JPG</strong></p>
         </div>
         <input type="file" id="imageInput" accept="image/*">
 
-        <label>Answer Options</label>
+        <label>Where might it have come from?</label>
         <div class="options-container" id="optionsContainer">
           <div class="option-input">
-            <input type="text" placeholder="Option 1 (e.g., Paris, France)" class="option-field">
+            <input type="text" placeholder="Location 1 (e.g., Dahieh)" class="option-field">
             <button class="btn-remove" onclick="removeOption(this)">×</button>
           </div>
           <div class="option-input">
-            <input type="text" placeholder="Option 2 (e.g., Rome, Italy)" class="option-field">
+            <input type="text" placeholder="Location 2 (e.g., Southern Suburbs)" class="option-field">
             <button class="btn-remove" onclick="removeOption(this)">×</button>
           </div>
           <div class="option-input">
-            <input type="text" placeholder="Option 3 (e.g., Barcelona, Spain)" class="option-field">
-            <button class="btn-remove" onclick="removeOption(this)">×</button>
-          </div>
-          <div class="option-input">
-            <input type="text" placeholder="Option 4 (e.g., Athens, Greece)" class="option-field">
+            <input type="text" placeholder="Location 3 (e.g., Airport Area)" class="option-field">
             <button class="btn-remove" onclick="removeOption(this)">×</button>
           </div>
         </div>
-        <button class="btn-add" onclick="addOption()">+ Add Another Option</button>
+        <button class="btn-add" onclick="addOption()">+ Add Another Location</button>
 
-        <button class="btn-primary" id="createBtn" onclick="createPoll()">Create Poll 🚀</button>
+        <button class="btn-primary" id="createBtn" onclick="createPoll()">Submit Report</button>
       </div>
     </div>
+
+    <footer>
+      <p>🇱🇧 Stay safe, Lebanon</p>
+    </footer>
   </div>
 
   <script>
     // ============================================
     // 🔧 SUPABASE CONFIGURATION - EDIT THESE!
     // ============================================
-    const SUPABASE_URL = 'YOUR_SUPABASE_URL';        // e.g., https://abc123.supabase.co
-    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';  // Your anon/public key
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
     // ============================================
 
     let supabase = null;
     let isConfigured = false;
 
-    // Check if Supabase is configured
     if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
       supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       isConfigured = true;
       document.getElementById('setup-banner').innerHTML = `
-        <h3>✅ Connected to Supabase</h3>
-        <p>Your polls are now shared with everyone!</p>
+        <h3>✅ Connected</h3>
+        <p>Reports are shared with everyone.</p>
       `;
       document.getElementById('setup-banner').classList.add('connected');
     }
 
-    // Get voter ID (anonymous but persistent per browser)
     function getVoterId() {
       let id = localStorage.getItem('voter_id');
       if (!id) {
@@ -729,7 +809,7 @@
       });
     });
 
-    // Image upload handling
+    // Image upload
     const uploadArea = document.getElementById('uploadArea');
     const imageInput = document.getElementById('imageInput');
     let uploadedImage = null;
@@ -738,7 +818,7 @@
 
     uploadArea.addEventListener('dragover', (e) => {
       e.preventDefault();
-      uploadArea.style.borderColor = 'var(--accent)';
+      uploadArea.style.borderColor = 'var(--cedar-green)';
     });
 
     uploadArea.addEventListener('dragleave', () => {
@@ -756,29 +836,27 @@
 
     imageInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
-      if (file) {
-        handleImageUpload(file);
-      }
+      if (file) handleImageUpload(file);
     });
 
     function handleImageUpload(file) {
       const reader = new FileReader();
       reader.onload = (e) => {
         uploadedImage = e.target.result;
-        uploadArea.innerHTML = `<img src="${uploadedImage}" alt="Uploaded location">`;
+        uploadArea.innerHTML = `<img src="${uploadedImage}" alt="Uploaded">`;
         uploadArea.classList.add('has-image');
       };
       reader.readAsDataURL(file);
     }
 
-    // Option management
+    // Options
     function addOption() {
       const container = document.getElementById('optionsContainer');
       const count = container.children.length + 1;
       const div = document.createElement('div');
       div.className = 'option-input';
       div.innerHTML = `
-        <input type="text" placeholder="Option ${count}" class="option-field">
+        <input type="text" placeholder="Location ${count}" class="option-field">
         <button class="btn-remove" onclick="removeOption(this)">×</button>
       `;
       container.appendChild(div);
@@ -794,47 +872,50 @@
     // Create poll
     async function createPoll() {
       const question = document.getElementById('pollQuestion').value.trim();
+      const description = document.getElementById('pollDescription').value.trim();
       const optionFields = document.querySelectorAll('.option-field');
       const options = Array.from(optionFields)
         .map(f => f.value.trim())
         .filter(v => v.length > 0);
 
       if (!question) {
-        alert('Please enter a question!');
-        return;
-      }
-
-      if (!uploadedImage) {
-        alert('Please upload an image!');
+        alert('Please describe what you heard');
         return;
       }
 
       if (options.length < 2) {
-        alert('Please add at least 2 options!');
+        alert('Please add at least 2 possible locations');
         return;
       }
 
       const btn = document.getElementById('createBtn');
       btn.disabled = true;
-      btn.textContent = 'Creating...';
+      btn.textContent = 'Submitting...';
 
       const pollId = Date.now().toString(36) + Math.random().toString(36).substr(2, 6);
+      
+      // Default image if none uploaded
+      const image = uploadedImage || 'data:image/svg+xml,' + encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
+          <rect fill="#f5f5f5" width="400" height="200"/>
+          <text x="200" y="100" text-anchor="middle" fill="#999" font-family="sans-serif" font-size="14">No image</text>
+        </svg>
+      `);
 
       if (isConfigured) {
         try {
-          // Insert poll
           const { error: pollError } = await supabase
             .from('polls')
             .insert({
               id: pollId,
               question: question,
-              image: uploadedImage,
+              description: description,
+              image: image,
               created_at: new Date().toISOString()
             });
 
           if (pollError) throw pollError;
 
-          // Insert options
           const optionRows = options.map((text, idx) => ({
             poll_id: pollId,
             option_index: idx,
@@ -849,58 +930,53 @@
           if (optionsError) throw optionsError;
 
         } catch (err) {
-          console.error('Error creating poll:', err);
-          alert('Error creating poll. Check console for details.');
+          console.error('Error:', err);
+          alert('Error submitting report');
           btn.disabled = false;
-          btn.textContent = 'Create Poll 🚀';
+          btn.textContent = 'Submit Report';
           return;
         }
       } else {
-        // Fallback to localStorage for demo
         const polls = JSON.parse(localStorage.getItem('demo_polls') || '[]');
         polls.unshift({
           id: pollId,
           question,
-          image: uploadedImage,
+          description,
+          image: image,
           options: options.map(text => ({ text, votes: 0 })),
           created_at: new Date().toISOString()
         });
         localStorage.setItem('demo_polls', JSON.stringify(polls));
       }
 
-      // Reset form
       resetForm();
       btn.disabled = false;
-      btn.textContent = 'Create Poll 🚀';
+      btn.textContent = 'Submit Report';
 
-      // Switch to vote tab and show the new poll
       document.querySelector('[data-tab="vote"]').click();
       showPoll(pollId);
     }
 
     function resetForm() {
-      document.getElementById('pollQuestion').value = 'Where is this location?';
+      document.getElementById('pollQuestion').value = '';
+      document.getElementById('pollDescription').value = '';
       uploadedImage = null;
       uploadArea.innerHTML = `
-        <div class="upload-icon">🏞️</div>
-        <p class="upload-text">Click to upload or drag & drop<br><strong>PNG, JPG up to 10MB</strong></p>
+        <div class="upload-icon">📷</div>
+        <p class="upload-text">Click to upload or drag & drop<br><strong>PNG, JPG</strong></p>
       `;
       uploadArea.classList.remove('has-image');
       document.getElementById('optionsContainer').innerHTML = `
         <div class="option-input">
-          <input type="text" placeholder="Option 1 (e.g., Paris, France)" class="option-field">
+          <input type="text" placeholder="Location 1 (e.g., Dahieh)" class="option-field">
           <button class="btn-remove" onclick="removeOption(this)">×</button>
         </div>
         <div class="option-input">
-          <input type="text" placeholder="Option 2 (e.g., Rome, Italy)" class="option-field">
+          <input type="text" placeholder="Location 2 (e.g., Southern Suburbs)" class="option-field">
           <button class="btn-remove" onclick="removeOption(this)">×</button>
         </div>
         <div class="option-input">
-          <input type="text" placeholder="Option 3 (e.g., Barcelona, Spain)" class="option-field">
-          <button class="btn-remove" onclick="removeOption(this)">×</button>
-        </div>
-        <div class="option-input">
-          <input type="text" placeholder="Option 4 (e.g., Athens, Greece)" class="option-field">
+          <input type="text" placeholder="Location 3 (e.g., Airport Area)" class="option-field">
           <button class="btn-remove" onclick="removeOption(this)">×</button>
         </div>
       `;
@@ -914,7 +990,6 @@
       activePoll.style.display = 'none';
       pollList.style.display = 'block';
 
-      // Check for poll ID in URL
       const urlParams = new URLSearchParams(window.location.search);
       const pollId = urlParams.get('poll');
       if (pollId) {
@@ -925,7 +1000,7 @@
       pollList.innerHTML = `
         <div class="loading">
           <div class="spinner"></div>
-          <p>Loading polls...</p>
+          <p>Loading reports...</p>
         </div>
       `;
 
@@ -940,7 +1015,6 @@
 
           if (error) throw error;
 
-          // Get vote counts for each poll
           for (let poll of data) {
             const { data: options } = await supabase
               .from('poll_options')
@@ -953,10 +1027,9 @@
 
           polls = data;
         } catch (err) {
-          console.error('Error loading polls:', err);
+          console.error('Error:', err);
         }
       } else {
-        // Demo mode
         polls = JSON.parse(localStorage.getItem('demo_polls') || '[]');
         polls.forEach(p => {
           p.totalVotes = p.options.reduce((sum, o) => sum + (o.votes || 0), 0);
@@ -966,26 +1039,31 @@
       if (polls.length === 0) {
         pollList.innerHTML = `
           <div class="empty-state">
-            <div class="icon">🗺️</div>
-            <h3>No polls yet!</h3>
-            <p>Create your first location poll to get started.</p>
+            <div class="icon">📍</div>
+            <h3>No reports yet</h3>
+            <p>Be the first to report a sound.</p>
           </div>
         `;
         return;
       }
 
-      pollList.innerHTML = polls.map(poll => `
-        <div class="poll-list-item" onclick="showPoll('${poll.id}')">
-          <img src="${poll.image}" alt="Location">
-          <div class="poll-list-info">
-            <div class="poll-list-title">${escapeHtml(poll.question)}</div>
-            <div class="poll-list-meta">${poll.totalVotes} votes • ${poll.options.length} options</div>
+      pollList.innerHTML = polls.map(poll => {
+        const time = new Date(poll.created_at).toLocaleString('en-US', {
+          month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
+        return `
+          <div class="poll-list-item" onclick="showPoll('${poll.id}')">
+            <img src="${poll.image}" alt="">
+            <div class="poll-list-info">
+              <div class="poll-list-title">${escapeHtml(poll.question)}</div>
+              <div class="poll-list-meta">${time} • ${poll.totalVotes} responses</div>
+            </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
-    // Show single poll
+    // Show poll
     async function showPoll(pollId) {
       const pollList = document.getElementById('poll-list');
       const activePoll = document.getElementById('active-poll');
@@ -996,7 +1074,7 @@
       activePoll.innerHTML = `
         <div class="loading">
           <div class="spinner"></div>
-          <p>Loading poll...</p>
+          <p>Loading...</p>
         </div>
       `;
 
@@ -1012,26 +1090,23 @@
 
           if (pollError) throw pollError;
 
-          const { data: options, error: optionsError } = await supabase
+          const { data: options } = await supabase
             .from('poll_options')
             .select('*')
             .eq('poll_id', pollId)
             .order('option_index');
-
-          if (optionsError) throw optionsError;
 
           poll = pollData;
           poll.options = options;
           poll.totalVotes = options.reduce((sum, o) => sum + (o.votes || 0), 0);
 
         } catch (err) {
-          console.error('Error loading poll:', err);
+          console.error('Error:', err);
           activePoll.innerHTML = `
-            <button class="btn-back" onclick="loadPolls()">← Back to all polls</button>
+            <button class="btn-back" onclick="loadPolls()">← Back</button>
             <div class="empty-state">
               <div class="icon">❌</div>
-              <h3>Poll not found</h3>
-              <p>This poll may have been deleted.</p>
+              <h3>Report not found</h3>
             </div>
           `;
           return;
@@ -1051,42 +1126,52 @@
 
       const hasVoted = localStorage.getItem(`voted_${pollId}`);
       const shareUrl = `${window.location.origin}${window.location.pathname}?poll=${pollId}`;
+      const time = new Date(poll.created_at).toLocaleString('en-US', {
+        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
 
       activePoll.innerHTML = `
-        <button class="btn-back" onclick="loadPolls(); history.pushState({}, '', location.pathname)">← Back to all polls</button>
+        <button class="btn-back" onclick="loadPolls(); history.pushState({}, '', location.pathname)">← Back to reports</button>
         <div class="card">
-          <img src="${poll.image}" class="poll-image" alt="Location">
+          ${poll.image && !poll.image.includes('No image') ? `<img src="${poll.image}" class="poll-image" alt="">` : ''}
+          <div class="poll-meta">
+            <span>📍 Sound Report</span>
+            <span class="dot"></span>
+            <span>${time}</span>
+          </div>
           <h2 class="poll-question">${escapeHtml(poll.question)}</h2>
+          ${poll.description ? `<p class="poll-description">${escapeHtml(poll.description)}</p>` : ''}
+          
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px;">Where do you think it came from?</p>
+          
           <div class="poll-options">
             ${poll.options.map((opt, idx) => {
               const percentage = poll.totalVotes > 0 ? Math.round((opt.votes / poll.totalVotes) * 100) : 0;
               return `
                 <div class="poll-option ${hasVoted ? 'voted' : ''}" 
-                     onclick="vote('${poll.id}', ${idx})"
-                     style="${hasVoted ? `--progress: ${percentage}%` : ''}">
+                     onclick="vote('${poll.id}', ${idx})">
                   <div class="progress-bar" style="width: ${hasVoted ? percentage : 0}%"></div>
                   <div class="content">
                     <span class="option-label">${escapeHtml(opt.text)}</span>
                     <div class="option-stats">
                       <span>${percentage}%</span>
-                      <span class="vote-count">${opt.votes} votes</span>
+                      <span class="vote-count">${opt.votes}</span>
                     </div>
                   </div>
                 </div>
               `;
             }).join('')}
           </div>
-          <p class="total-votes"><strong>${poll.totalVotes}</strong> total votes</p>
+          <p class="total-votes"><strong>${poll.totalVotes}</strong> responses</p>
           
           <div class="share-section">
-            <p>📤 Share this poll with friends!</p>
+            <p>Share this report</p>
             <code class="share-link">${shareUrl}</code>
             <button class="btn-copy" onclick="copyLink('${shareUrl}')">Copy Link</button>
           </div>
         </div>
       `;
 
-      // Update URL without reload
       history.pushState({}, '', `?poll=${pollId}`);
     }
 
@@ -1096,32 +1181,24 @@
 
       if (isConfigured) {
         try {
-          // Get current vote count
-          const { data: option, error: fetchError } = await supabase
+          const { data: option } = await supabase
             .from('poll_options')
             .select('votes')
             .eq('poll_id', pollId)
             .eq('option_index', optionIndex)
             .single();
 
-          if (fetchError) throw fetchError;
-
-          // Increment vote
-          const { error: updateError } = await supabase
+          await supabase
             .from('poll_options')
             .update({ votes: (option.votes || 0) + 1 })
             .eq('poll_id', pollId)
             .eq('option_index', optionIndex);
 
-          if (updateError) throw updateError;
-
         } catch (err) {
-          console.error('Error voting:', err);
-          alert('Error submitting vote. Please try again.');
+          console.error('Error:', err);
           return;
         }
       } else {
-        // Demo mode
         const polls = JSON.parse(localStorage.getItem('demo_polls') || '[]');
         const pollIndex = polls.findIndex(p => p.id === pollId);
         if (pollIndex !== -1) {
@@ -1134,7 +1211,6 @@
       showPoll(pollId);
     }
 
-    // Copy link
     function copyLink(url) {
       navigator.clipboard.writeText(url).then(() => {
         const btn = event.target;
@@ -1143,14 +1219,12 @@
       });
     }
 
-    // Escape HTML
     function escapeHtml(text) {
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML;
     }
 
-    // Initialize
     loadPolls();
   </script>
 </body>
